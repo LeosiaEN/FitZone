@@ -1,0 +1,174 @@
+services:
+  # Auth Database
+  auth-db:
+    image: postgres
+    container_name: auth-db
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth-data:/var/lib/postgresql/data
+      - ./init-db/auth:/docker-entrypoint-initdb.d
+
+  # User Database
+  user-db:
+    image: postgres
+    container_name: user-db
+    environment:
+      POSTGRES_DB: user
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - user-data:/var/lib/postgresql/data
+      - ./init-db/user:/docker-entrypoint-initdb.d
+
+  # Program Database
+  program-db:
+    image: postgres
+    container_name: program-db
+    environment:
+      POSTGRES_DB: program
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - program-data:/var/lib/postgresql/data
+      - ./init-db/program:/docker-entrypoint-initdb.d
+
+  # Trainer Database (Reserved for future trainer features)
+  # trainer-db:
+  #   image: postgres
+  #   container_name: trainer-db
+  #   environment:
+  #     POSTGRES_DB: trainer
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #   ports:
+  #     - "5435:5432"
+  #   volumes:
+  #     - trainer-data:/var/lib/postgresql/data
+  #     - ./init-db/trainer:/docker-entrypoint-initdb.d
+
+  # Nutrition Database
+  nutrition-db:
+    image: postgres
+    container_name: nutrition-db
+    environment:
+      POSTGRES_DB: nutrition
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - nutrition-data:/var/lib/postgresql/data
+      - ./init-db/nutrition:/docker-entrypoint-initdb.d
+
+  # Tracking Database
+  tracking-db:
+    image: postgres
+    container_name: tracking-db
+    environment:
+      POSTGRES_DB: tracking
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5437:5432"  # Dış port 5437
+    volumes:
+      - tracking-data:/var/lib/postgresql/data
+      - ./init-db/tracking:/docker-entrypoint-initdb.d  # Varsayılan init-db dosyaları
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./fitzone-backend/auth-service
+    container_name: auth-service
+    ports:
+      - "3001:5001"
+    depends_on:
+      - auth-db
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@auth-db:5432/auth
+
+  # User Service
+  user-service:
+    build:
+      context: ./fitzone-backend/user-service
+    container_name: user-service
+    ports:
+      - "3002:5002"
+    depends_on:
+      - user-db
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@user-db:5432/user
+
+  # Workout Service
+  workout-service:
+    build:
+      context: ./fitzone-backend/workout-service
+    container_name: workout-service
+    ports:
+      - "3003:5003"
+    depends_on:
+      - program-db
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@program-db:5432/program
+
+  # Nutrition Service
+  nutrition-service:
+    build:
+      context: ./fitzone-backend/nutrition-service
+    container_name: nutrition-service
+    ports:
+      - "3004:5004"
+    depends_on:
+      - nutrition-db
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@nutrition-db:5432/nutrition
+
+  # Tracking Service
+  tracking-service:
+    build:
+      context: ./fitzone-backend/tracking-service
+    container_name: tracking-service
+    ports:
+      - "3005:5005"
+    depends_on:
+      - tracking-db
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@tracking-db:5432/tracking
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./fitzone-backend/api-gateway
+    container_name: api-gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      - auth-service
+      - user-service
+      - workout-service
+      - nutrition-service
+      - tracking-service
+    environment:
+      PORT: 5000
+      AUTH_SERVICE_URL: http://auth-service:5001
+      USER_SERVICE_URL: http://user-service:5002
+      WORKOUT_SERVICE_URL: http://workout-service:5003
+      NUTRITION_SERVICE_URL: http://nutrition-service:5004
+      TRACKING_SERVICE_URL: http://tracking-service:5005
+
+volumes:
+  auth-data:
+  user-data:
+  program-data:
+  trainer-data:
+  nutrition-data:
+  tracking-data:  # Yeni volume
+ 

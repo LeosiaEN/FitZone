@@ -1,0 +1,47 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Workout {
+  id          Int                @id @default(autoincrement())
+  title       String
+  description String?
+  duration    Int
+  level       String             // beginner, intermediate, advanced
+  isPublic    Boolean            @default(false)
+  userId      Int
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  exercises   WorkoutExercise[]  // workout içindeki egzersizler
+}
+
+model Exercise {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  videoUrl          String
+  category          String
+  equipmentRequired Boolean            @default(false) // yeni alan
+  level             String             // Egzersizin seviyesi (Beginner, Intermediate, Advanced)
+  description       String?            // Egzersiz açıklaması (isteğe bağlı)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  workouts          WorkoutExercise[]  // ilişkili workoutlar
+}
+
+model WorkoutExercise {
+  id         Int      @id @default(autoincrement())
+  workout    Workout  @relation(fields: [workoutId], references: [id], onDelete: Cascade)  // Cascade ekleniyor
+  workoutId  Int
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade) // Cascade ekleniyor
+  exerciseId Int
+  sets       Int
+  reps       Int
+  createdAt  DateTime @default(now()) // WorkoutExercise için tarih ekleniyor
+  updatedAt  DateTime @updatedAt      // WorkoutExercise için güncelleme tarihi
+}

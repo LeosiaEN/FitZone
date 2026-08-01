@@ -1,0 +1,45 @@
+  generator client {
+    provider      = "prisma-client-js"
+    binaryTargets = ["native", "debian-openssl-3.0.x"]
+  }
+
+  datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+  }
+
+  model NutritionLog {
+  id         Int              @id @default(autoincrement())
+  userId     Int
+  planName   String           // Yeni alan: 'cut', 'bulk', vs.
+  date       DateTime         @default(now())
+  mealType   String           // Örn: "kahvaltı", "öğle", "akşam"
+  entries    NutritionEntry[]
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([userId, planName])
+}
+
+
+  model FoodItem {
+    id               Int               @id @default(autoincrement())
+    name             String            // Örn: "pirinç", "tavuk göğsü"
+    calories         Int               // 100g başına
+    protein          Float
+    carbs            Float
+    fat              Float
+    createdAt        DateTime          @default(now())
+    nutritionEntries NutritionEntry[]  // ← Karşılıklı ilişki (1-to-many)
+  }
+model NutritionEntry {
+  id             Int          @id @default(autoincrement())
+  nutritionLog   NutritionLog @relation(fields: [nutritionLogId], references: [id], onDelete: Cascade)
+  nutritionLogId Int
+  foodItem       FoodItem     @relation(fields: [foodItemId], references: [id])
+  foodItemId     Int
+  amountInGrams  Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
