@@ -159,7 +159,9 @@ Uygulama varsayılan olarak `http://localhost:5173` adresinde çalışacaktır.
 ---
 
 ## 📄 Lisans
-Bu proje MIT lisansı ile lisanslanmıştır.
+Bu proje **[PolyForm Noncommercial License 1.0.0](LICENSE)** ile lisanslanmıştır. 
+
+> **🛡️ Kullanım Şartı:** Bu proje kişisel, eğitim ve ticari olmayan (non-commercial) amaçlarla serbestçe incelenebilir ve kullanılabilir. Ticari amaçlı kullanımı veya satışı yasaktır.
 
 <p align="center">
   <sub>Developed with ❤️ by <a href="https://github.com/LeosiaEN">Eren Özdemir (LeosiaEN)</a></sub>
